@@ -32,8 +32,8 @@ long goto_ra_bl_fix = 0;
 long goto_dec_bl_fix = 0;
 long previous_ra_bl_fix = 0;
 long previous_dec_bl_fix = 0;
-int previous_ra_goto_direction=1;
-int previous_dec_goto_direction=1;
+int previous_ra_goto_direction = 1;
+int previous_dec_goto_direction = 1;
 long received_ra_bl_fix = 0;
 long received_dec_bl_fix = 0;
 boolean motors_initialized = false;
@@ -41,22 +41,22 @@ boolean energy_saving_is_on = false;
 int dec_goto_direction = 1;
 int ra_goto_direction = 1;
 int stop_and_restore_dir = 1;
-int same_move_counter=0;
-int previous_ra_backlash_fix=0;
-int previous_dec_backlash_fix=0;
-int current_ra_backlash_fix=0;
-int current_dec_backlash_fix=0;
-boolean at_initial_position=true;
-long ra_initialization_steps=0;
-long dec_initialization_steps=0;
-long ra_stop_tracking_limit_up=0;
-long ra_horizon_tracking_limit=0;
-boolean tracking_reached_limit=false;
-boolean auto_tracking=false;
+int same_move_counter = 0;
+int previous_ra_backlash_fix = 0;
+int previous_dec_backlash_fix = 0;
+int current_ra_backlash_fix = 0;
+int current_dec_backlash_fix = 0;
+boolean at_initial_position = true;
+long ra_initialization_steps = 0;
+long dec_initialization_steps = 0;
+long ra_stop_tracking_limit_up = 0;
+long ra_horizon_tracking_limit = 0;
+boolean tracking_reached_limit = false;
+boolean auto_tracking = false;
 int auto_centering_speed;
 double ra_configured_max_speed ;
 double dec_configured_max_speed ;
-float ra_tracking_rate=0;
+float ra_tracking_rate = 0;
 
 
 
@@ -91,8 +91,8 @@ void setup() {
 
 
 
- // Serial.begin(9600);
- // Serial.println(F("<Arduino is ready>"));
+  // Serial.begin(9600);
+  // Serial.println(F("<Arduino is ready>"));
   Bluetooth.begin(9600);
   Bluetooth.println(F("Mount initialization..."));
   // motors_initialization();
@@ -100,15 +100,6 @@ void setup() {
 
 
 }
-
-/*Initialization of the motors. Move to one direction 5000 steps,
-  Next move to the opposite direction 5000 steps. Starting position remains at (0,0) steps.
-  This procedure is done to make sure that, at the starting position, any back-lash is limited to one direction for each motor.
-  So when the motors start to move there will be either 0 back-lash, or the maximum amount of back-lash. Not something in between.
-  for testing purposes..this may prove to be redundant  */
-
-
-
 
 /*Selection of X4 microstepping mode of the motor driver.It is valid for both the tmc2208 and a4988 chips*/
 void microstep_mode_X4() {
@@ -149,10 +140,12 @@ void move_RA_motor(long RA_steps) {
   Bluetooth.println(RA_steps);
   alignRA = 0;
 
-  if(!second_move_execution){
-goto_ra_bl_fix=0;}
-  if(second_move_execution){
-goto_ra_bl_fix = previous_ra_bl_fix;}
+  if (!second_move_execution) {
+    goto_ra_bl_fix = 0;
+  }
+  if (second_move_execution) {
+    goto_ra_bl_fix = previous_ra_bl_fix;
+  }
 
   /*move clockwise: */
   if (RA_stepper.currentPosition() < RA_steps) {
@@ -163,24 +156,17 @@ goto_ra_bl_fix = previous_ra_bl_fix;}
   }
 
   /*move counter-clockwise: */
-  
+
 
   if (RA_stepper.currentPosition() > RA_steps)
   {
-if(ra_goto_direction==1 && second_move_execution){
-   // previous_ra_bl_fix=current_ra_backlash_fix;
-    //  goto_ra_bl_fix = previous_ra_bl_fix;
-    goto_ra_bl_fix = current_ra_backlash_fix;
-       Bluetooth.println(F(" got current ra_fix !"));
-}
+    if (ra_goto_direction == 1 && second_move_execution) {
+      // previous_ra_bl_fix=current_ra_backlash_fix;
+      //  goto_ra_bl_fix = previous_ra_bl_fix;
+      goto_ra_bl_fix = current_ra_backlash_fix;
+      Bluetooth.println(F(" got current ra_fix !"));
+    }
 
-   /* if(previous_ra_goto_direction != ra_goto_direction && !second_move_execution){
-      previous_ra_bl_fix=current_ra_backlash_fix;
-      goto_ra_bl_fix = previous_ra_bl_fix;
-       Bluetooth.println(F("previous_ra_goto_direction: "));
-    Bluetooth.println(previous_ra_goto_direction);
-       Bluetooth.println(F("ra_goto_direction: "));
-    Bluetooth.println(ra_goto_direction);}*/
     RA_steps_to_go = RA_steps_to_go + goto_ra_bl_fix;
     RA_stepper.moveTo(RA_steps_to_go);
     Bluetooth.println(F("RA moving counter-clockwise!"));
@@ -188,27 +174,27 @@ if(ra_goto_direction==1 && second_move_execution){
     Bluetooth.println(F(" RA fix APPLIED !"));
   }
 
-  
-previous_ra_goto_direction =ra_goto_direction;
+
+  previous_ra_goto_direction = ra_goto_direction;
   define_ra_direction();
-  
-  if(previous_ra_goto_direction != ra_goto_direction){
-     Bluetooth.println(F(" RA DIRECTION CHANGED"));
-      Bluetooth.println(F("previous_ra_goto_direction: "));
+
+  if (previous_ra_goto_direction != ra_goto_direction) {
+    Bluetooth.println(F(" RA DIRECTION CHANGED"));
+    Bluetooth.println(F("previous_ra_goto_direction: "));
     Bluetooth.println(previous_ra_goto_direction);
-       Bluetooth.println(F("ra_goto_direction: "));
+    Bluetooth.println(F("ra_goto_direction: "));
     Bluetooth.println(ra_goto_direction);
-    previous_ra_bl_fix=current_ra_backlash_fix;;
-     
-    }
- if(previous_ra_goto_direction == ra_goto_direction){
-   Bluetooth.println(F("previous_ra_goto_direction: "));
+    previous_ra_bl_fix = current_ra_backlash_fix;;
+
+  }
+  if (previous_ra_goto_direction == ra_goto_direction) {
+    Bluetooth.println(F("previous_ra_goto_direction: "));
     Bluetooth.println(previous_ra_goto_direction);
-       Bluetooth.println(F("ra_goto_direction: "));
+    Bluetooth.println(F("ra_goto_direction: "));
     Bluetooth.println(ra_goto_direction);
-     Bluetooth.println(F(" RA DIRECTION MAINTAINED"));
-    }
-    
+    Bluetooth.println(F(" RA DIRECTION MAINTAINED"));
+  }
+
 
 }
 
@@ -230,25 +216,27 @@ void move_DEC_motor(long DEC_steps) {
   Bluetooth.println(F("Moving DEC to"));
   Bluetooth.println(DEC_steps_to_go);
   alignDEC = 0;
-  
-  if(!second_move_execution){
-goto_dec_bl_fix=0;}
-  if(second_move_execution){
-goto_dec_bl_fix = previous_dec_bl_fix;}
+
+  if (!second_move_execution) {
+    goto_dec_bl_fix = 0;
+  }
+  if (second_move_execution) {
+    goto_dec_bl_fix = previous_dec_bl_fix;
+  }
 
   /*move clockwise: */
   if (DEC_stepper.currentPosition() < DEC_steps )  {
-   // DEC_steps_to_go = DEC_steps_to_go + 0 ;
+    // DEC_steps_to_go = DEC_steps_to_go + 0 ;
     DEC_stepper.moveTo(DEC_steps + 0);
     Bluetooth.println(F("DEC moving clockwise!"));
     Bluetooth.println(F("0 DEC fix APPLIED !"));
-    
+
   }
 
   /*move counter-clockwise: */
 
   if (DEC_stepper.currentPosition() > DEC_steps ||
-  (DEC_stepper.currentPosition() == DEC_steps  && dec_goto_direction==-1  ))
+      (DEC_stepper.currentPosition() == DEC_steps  && dec_goto_direction == -1  ))
   {
     DEC_steps_to_go = DEC_steps_to_go + goto_dec_bl_fix ;
     DEC_stepper.moveTo(DEC_steps_to_go);
@@ -256,15 +244,15 @@ goto_dec_bl_fix = previous_dec_bl_fix;}
     Bluetooth.print( goto_dec_bl_fix );
     Bluetooth.println(F(" DEC fix APPLIED !"));
   }
- previous_dec_goto_direction= dec_goto_direction;
+  previous_dec_goto_direction = dec_goto_direction;
   define_dec_direction();
-  if(previous_dec_goto_direction != dec_goto_direction){
-     Bluetooth.println(F(" DEC DIRECTION CHANGED"));
-     previous_dec_bl_fix=received_dec_bl_fix;
-    }
- if(previous_dec_goto_direction == dec_goto_direction){
-     Bluetooth.println(F(" DEC DIRECTION MAINTAINED"));
-    }   
+  if (previous_dec_goto_direction != dec_goto_direction) {
+    Bluetooth.println(F(" DEC DIRECTION CHANGED"));
+    previous_dec_bl_fix = received_dec_bl_fix;
+  }
+  if (previous_dec_goto_direction == dec_goto_direction) {
+    Bluetooth.println(F(" DEC DIRECTION MAINTAINED"));
+  }
 
 }
 
@@ -293,8 +281,8 @@ void track();
 void speed_dec_decrease();
 void micro_move_ra_counterclockwise();
 void set_energy_mode();
-void blocking_dec_move(long steps,float acceleration);
-void blocking_ra_move(long steps,float accelaration);
+void blocking_dec_move(long steps, float acceleration);
+void blocking_ra_move(long steps, float accelaration);
 
 
 
@@ -323,61 +311,56 @@ void loop() {
   }
 
   if (DEC_stepper.distanceToGo() == 0 && RA_stepper.distanceToGo() == 0 && RA_auto_control == 0 && DEC_auto_control == 0 && motors_stopped == false) {
-     //Bluetooth.println(DEC_stepper.currentPosition());
-   //  Bluetooth.println(RA_stepper.currentPosition());
-    if ((RA_stepper.currentPosition() == received_ra_bl_fix*4 || RA_stepper.currentPosition()==-received_ra_bl_fix*4 || RA_stepper.currentPosition()==0)
-     && (DEC_stepper.currentPosition() == received_dec_bl_fix*4 || DEC_stepper.currentPosition()==-received_dec_bl_fix*4 || DEC_stepper.currentPosition()==0))
+
+    if ((RA_stepper.currentPosition() == received_ra_bl_fix * 4 || RA_stepper.currentPosition() == -received_ra_bl_fix * 4 || RA_stepper.currentPosition() == 0)
+        && (DEC_stepper.currentPosition() == received_dec_bl_fix * 4 || DEC_stepper.currentPosition() == -received_dec_bl_fix * 4 || DEC_stepper.currentPosition() == 0))
     {
-      
-     if(RA_steps_to_go == received_ra_bl_fix ){
+
+      if (RA_steps_to_go == received_ra_bl_fix ) {
         blocking_ra_move(-received_ra_bl_fix, RA_stepper.maxSpeed());
-        ra_goto_direction=1;
-        RA_direction_slow=1;
-        
+        ra_goto_direction = 1;
+        RA_direction_slow = 1;
+
       }
-        if(DEC_steps_to_go == received_dec_bl_fix ){
+      if (DEC_steps_to_go == received_dec_bl_fix ) {
         blocking_dec_move(-received_dec_bl_fix, DEC_stepper.maxSpeed());
-        dec_goto_direction=1;
-        DEC_direction_slow=1;
-       
+        dec_goto_direction = 1;
+        DEC_direction_slow = 1;
+
       }
-      
+
       Bluetooth.println(F("returned_to_initial_position"));
-      at_initial_position=true;
+      at_initial_position = true;
       motors_stopped = true;
-      same_move_counter=2;
+      same_move_counter = 2;
     }
     else {
 
-      
+
       Bluetooth.println(F("motors_stopped")); motors_stopped = true;
       same_move_counter = same_move_counter + 1 ;
 
-      
-    }
-     send_motor_directions();
-     //Bluetooth.print(F("same_move_counter :"));
-   //  Bluetooth.println(same_move_counter);
 
-     if(same_move_counter==2){
-/*TODO next 3 lines maybe unecessery, test if so ..*/
- //microstep_mode_X4();
- 
-    // previous_ra_backlash_fix=ra_backlash_fix;
-    // previous_dec_backlash_fix=dec_backlash_fix;
-     get_current_backlash_fixes();
-      }
-     
-         
+    }
+    send_motor_directions();
+    //Bluetooth.print(F("same_move_counter :"));
+    //  Bluetooth.println(same_move_counter);
+
+    if (same_move_counter == 2) {
+      get_current_backlash_fixes();
+    }
+
+
     microstep_mode_X16();
- 
-     if (energy_saving_is_on) {
+
+    if (energy_saving_is_on) {
       digitalWrite(9, HIGH); //DISABLE the DEC motor driver
       digitalWrite(10, HIGH); //DISABLE the RA motor driver
     }
-    if(auto_tracking && !at_initial_position && same_move_counter==2){
+    if (auto_tracking && !at_initial_position && same_move_counter == 2) {
       Bluetooth.println(F("auto_tracking_started"));
-      Bluetooth.println(F("request_tracking"));}
+      Bluetooth.println(F("request_tracking"));
+    }
   }
 
   if (RA_manual_control == 1  || DEC_manual_control == 1 ) {
@@ -389,17 +372,29 @@ void loop() {
   if (ra_tracking_rate < 0 && (tracking_ra_flag == 1 || tracking_dec_flag == 1) ) {
     RA_stepper.runSpeed();
     DEC_stepper.runSpeed();
-    if(RA_steps_to_go < 0 && DEC_steps_to_go > 0 && RA_stepper.currentPosition() < - ra_stop_tracking_limit_up * 4 ){ tracking_reached_limit= true ; stop_all();}
-    if(((RA_steps_to_go > 0 || (RA_steps_to_go < 0 && DEC_steps_to_go < 0))) &&( RA_stepper.currentPosition() < ra_horizon_tracking_limit * 4)  ){tracking_reached_limit= true ; stop_all();}
-   
+    if (RA_steps_to_go < 0 && DEC_steps_to_go > 0 && RA_stepper.currentPosition() < - ra_stop_tracking_limit_up * 4 ) {
+      tracking_reached_limit = true ;
+      stop_all();
+    }
+    if (((RA_steps_to_go > 0 || (RA_steps_to_go < 0 && DEC_steps_to_go < 0))) && ( RA_stepper.currentPosition() < ra_horizon_tracking_limit * 4)  ) {
+      tracking_reached_limit = true ;
+      stop_all();
+    }
+
   }
 
   if (ra_tracking_rate > 0 && (tracking_ra_flag == 1 || tracking_dec_flag == 1) ) {
     RA_stepper.runSpeed();
     DEC_stepper.runSpeed();
-    if(RA_steps_to_go > 0 && DEC_steps_to_go < 0 && RA_stepper.currentPosition() >  ra_stop_tracking_limit_up * 4 ){ tracking_reached_limit= true ; stop_all();}
-    if(((RA_steps_to_go < 0 || (RA_steps_to_go > 0 && DEC_steps_to_go > 0))) &&( RA_stepper.currentPosition() > ra_horizon_tracking_limit * 4)  ){tracking_reached_limit= true ; stop_all();}
-   
+    if (RA_steps_to_go > 0 && DEC_steps_to_go < 0 && RA_stepper.currentPosition() >  ra_stop_tracking_limit_up * 4 ) {
+      tracking_reached_limit = true ;
+      stop_all();
+    }
+    if (((RA_steps_to_go < 0 || (RA_steps_to_go > 0 && DEC_steps_to_go > 0))) && ( RA_stepper.currentPosition() > ra_horizon_tracking_limit * 4)  ) {
+      tracking_reached_limit = true ;
+      stop_all();
+    }
+
   }
 
 
@@ -512,7 +507,7 @@ void parseData() {
   if (strcmp(command, "b_lash_ra") == 0) {
     check_ra_backlash();
   }
- 
+
   if (strcmp(command, "move_with_b_lash") == 0) {
     move_command();
     second_move_execution = true;
@@ -530,35 +525,35 @@ void parseData() {
   if (strcmp(command, "set_energy_saving") == 0) {
     set_energy_mode();
   }
- if (strcmp(command, "request_energy_saving") == 0) {
-      Bluetooth.print(F("esm_currently:"));
-      Bluetooth.println(energy_saving_is_on);
-      
+  if (strcmp(command, "request_energy_saving") == 0) {
+    Bluetooth.print(F("esm_currently:"));
+    Bluetooth.println(energy_saving_is_on);
+
   }
-  
+
   if (strcmp(command, "get_motor_directions") == 0) {
     send_motor_directions();
   }
-   if (strcmp(command, "set_auto_tracking") == 0) {
+  if (strcmp(command, "set_auto_tracking") == 0) {
     set_auto_tracking();
   }
 
-    if (strcmp(command, "set_calibration_speed") == 0) {
+  if (strcmp(command, "set_calibration_speed") == 0) {
     set_calibration_motor_speeds();
   }
   if (strcmp(command, "center_object") == 0) {
     center_object();
   }
-   if (strcmp(command, "request_dec_position") == 0) {
+  if (strcmp(command, "request_dec_position") == 0) {
     Bluetooth.print(F("returned_current_dec_position:"));
     Bluetooth.println(DEC_stepper.currentPosition());
   }
 
-   if (strcmp(command, "update_current_bl_fixes") == 0) {
+  if (strcmp(command, "update_current_bl_fixes") == 0) {
     update_current_backlash_fixes();
   }
 
-  
+
 
 }
 void configuration_command() {
@@ -624,33 +619,34 @@ void move_command() {
 
   strtokIndx = strtok(NULL, ":");
   second_move_execution = atoi(strtokIndx);
- 
-  if(!second_move_execution){
-same_move_counter=0;
+
+  if (!second_move_execution) {
+    same_move_counter = 0;
   }
 
- strtokIndx = strtok(NULL, ":"); // this continues where the previous call left off
- current_ra_backlash_fix = atoi(strtokIndx);     // convert this part to a Long
- strtokIndx = strtok(NULL, ";"); // this continues where the previous call left off
- current_dec_backlash_fix = atoi(strtokIndx);     // convert this part to a Long
- 
-  
-if(at_initial_position){
-  Bluetooth.println(F("START POSITION DETECTED !!!"));
-  get_current_backlash_fixes();
-at_initial_position=false;}
+  strtokIndx = strtok(NULL, ":"); // this continues where the previous call left off
+  current_ra_backlash_fix = atoi(strtokIndx);     // convert this part to a Long
+  strtokIndx = strtok(NULL, ";"); // this continues where the previous call left off
+  current_dec_backlash_fix = atoi(strtokIndx);     // convert this part to a Long
+
+
+  if (at_initial_position) {
+    Bluetooth.println(F("START POSITION DETECTED !!!"));
+    get_current_backlash_fixes();
+    at_initial_position = false;
+  }
 
   if (second_move_execution) {
     Bluetooth.print(F("second_move_execution_true:"));
     Bluetooth.println(second_move_execution);
-  //  second_move_execution = false;
+    //  second_move_execution = false;
   }
   else if (!second_move_execution) {
     Bluetooth.print(F("second_move_execution_false:"));
     Bluetooth.println(second_move_execution);
     // received_ra_bl_fix = 0;
-     //received_dec_bl_fix = 0;
-   // second_move_execution = true;
+    //received_dec_bl_fix = 0;
+    // second_move_execution = true;
   }
 
   move_RA_motor(RA_steps_to_go );
@@ -667,7 +663,7 @@ void initialize_command() {
     digitalWrite(9, LOW); //ENABLE the DEC motor driver
     digitalWrite(10, LOW); //ENABLE the RA motor driver
 
-  
+
     char * strtokIndx; // this is used by strtok() as an index
     strtokIndx = strtok(NULL, ":");
     strcpy(command, strtokIndx); // copy it to command
@@ -675,18 +671,18 @@ void initialize_command() {
     strtokIndx = strtok(NULL, ":");
     strcpy(command, strtokIndx);
     dec_initialization_steps = atol(strtokIndx);     // convert this part to a Long
-  /* 90 + 1 degrees ra limit ,since during initialization RA motor moves 5 degrees ,5*18=90 degrees  , 1 degree is added so that the tracking will continue for 4(=60/15) minutes after Zenith is reached  */
-    ra_stop_tracking_limit_up = ra_initialization_steps*18+(ra_initialization_steps/5) ; 
-     blocking_dec_move(-dec_initialization_steps , DEC_stepper.maxSpeed()*0.4);
-     blocking_dec_move(dec_initialization_steps , DEC_stepper.maxSpeed()*0.4);
-     blocking_ra_move(-ra_initialization_steps , RA_stepper.maxSpeed()*0.4);
-     blocking_ra_move(ra_initialization_steps , RA_stepper.maxSpeed()*0.4);
- 
-     RA_stepper.setCurrentPosition(0);
-     DEC_stepper.setCurrentPosition(0);
-      motors_initialized = true;
+    /* 90 + 1 degrees ra limit ,since during initialization RA motor moves 5 degrees ,5*18=90 degrees  , 1 degree is added so that the tracking will continue for 4(=60/15) minutes after Zenith is reached  */
+    ra_stop_tracking_limit_up = ra_initialization_steps * 18 + (ra_initialization_steps / 5) ;
+    blocking_dec_move(-dec_initialization_steps , DEC_stepper.maxSpeed() * 0.4);
+    blocking_dec_move(dec_initialization_steps , DEC_stepper.maxSpeed() * 0.4);
+    blocking_ra_move(-ra_initialization_steps , RA_stepper.maxSpeed() * 0.4);
+    blocking_ra_move(ra_initialization_steps , RA_stepper.maxSpeed() * 0.4);
+
+    RA_stepper.setCurrentPosition(0);
+    DEC_stepper.setCurrentPosition(0);
+    motors_initialized = true;
   }
- 
+
   if (energy_saving_is_on) {
     digitalWrite(9, HIGH); //DISABLE the DEC motor driver
     digitalWrite(10, HIGH); //DISABLE the RA motor driver
@@ -698,7 +694,7 @@ void initialize_command() {
 
 void track() {
   /*track on both axis*/
-    char * strtokIndx; // this is used by strtok() as an index
+  char * strtokIndx; // this is used by strtok() as an index
   strtokIndx = strtok(NULL, ":");
   strcpy(command, strtokIndx); // copy it to command
   ra_tracking_rate = atof(strtokIndx);     // convert this part to a Long
@@ -707,69 +703,70 @@ void track() {
   float dec_tracking_rate = atof(strtokIndx);     // convert this part to a Long
   strtokIndx = strtok(NULL, ":");
   ra_horizon_tracking_limit = atol(strtokIndx);
-  
+
   digitalWrite(10, LOW); //ENABLE the RA motor driver
-  if(dec_tracking_rate!=0){
-  digitalWrite(9, LOW);} //ENABLE the DEC motor driver
-  
+  if (dec_tracking_rate != 0) {
+    digitalWrite(9, LOW);
+  } //ENABLE the DEC motor driver
+
   if (RA_auto_control == 0 && DEC_auto_control == 0) {
 
-if((ra_tracking_rate<0) && (ra_goto_direction == 1 || RA_direction_slow == 1) ){
+    if ((ra_tracking_rate < 0) && (ra_goto_direction == 1 || RA_direction_slow == 1) ) {
       blocking_ra_move(received_ra_bl_fix , RA_stepper.maxSpeed());
       RA_direction_slow = -1;
-      
+
     }
 
-    if((ra_tracking_rate>0) && (ra_goto_direction == -1 || RA_direction_slow ==-1) ){
+    if ((ra_tracking_rate > 0) && (ra_goto_direction == -1 || RA_direction_slow == -1) ) {
       blocking_ra_move(-received_ra_bl_fix , RA_stepper.maxSpeed());
       RA_direction_slow = 1;
     }
 
-    if((dec_tracking_rate<0) && (dec_goto_direction == 1 || DEC_direction_slow == 1) ){
+    if ((dec_tracking_rate < 0) && (dec_goto_direction == 1 || DEC_direction_slow == 1) ) {
       blocking_dec_move(received_dec_bl_fix , DEC_stepper.maxSpeed());
       DEC_direction_slow = -1;
     }
 
-    if((dec_tracking_rate>0) && (dec_goto_direction == -1 || DEC_direction_slow ==-1) ){
+    if ((dec_tracking_rate > 0) && (dec_goto_direction == -1 || DEC_direction_slow == -1) ) {
       blocking_dec_move(-received_dec_bl_fix , DEC_stepper.maxSpeed());
       DEC_direction_slow = 1;
     }
 
 
-  //  if(dec_tracking_rate!=0){tracking_dec_flag = 1}
-  //tracking_ra_flag = 1;
-    
     Bluetooth.println(F("Start Tracking at calculated rates on both axis"));
     Bluetooth.println(F("ra_tracking_rate : "));
     Bluetooth.println(ra_tracking_rate, 6);
     Bluetooth.println(F("dec_tracking_rate : "));
     Bluetooth.println(dec_tracking_rate, 6);
     RA_stepper.setSpeed(ra_tracking_rate);
-     tracking_ra_flag = 1;
-    if(dec_tracking_rate!=0){
-    DEC_stepper.setSpeed(dec_tracking_rate);tracking_dec_flag = 1;}
-     
-      
+    tracking_ra_flag = 1;
+    if (dec_tracking_rate != 0) {
+      DEC_stepper.setSpeed(dec_tracking_rate); tracking_dec_flag = 1;
+    }
+
+
   }
 }
 
 
- void set_calibration_motor_speeds(){
+void set_calibration_motor_speeds() {
   char * strtokIndx; // this is used by strtok() as an index
   strtokIndx = strtok(NULL, ":");
   int auto_centering_speed = atoi(strtokIndx);     // convert this part to a int
-   
-   if (DEC_stepper.isRunning() &&  DEC_manual_control == 1) {
-     if(DEC_stepper.speed()>0){
-    DEC_stepper.setSpeed( abs(sidereal_tracking_speed) * auto_centering_speed);}
-     if(DEC_stepper.speed()<0){
-    DEC_stepper.setSpeed( -abs(sidereal_tracking_speed) * auto_centering_speed);}
-     Bluetooth.print(F("dec_speed_set_to : "));
-     Bluetooth.println(DEC_stepper.speed());
-  } 
- 
-  
+
+  if (DEC_stepper.isRunning() &&  DEC_manual_control == 1) {
+    if (DEC_stepper.speed() > 0) {
+      DEC_stepper.setSpeed( abs(sidereal_tracking_speed) * auto_centering_speed);
+    }
+    if (DEC_stepper.speed() < 0) {
+      DEC_stepper.setSpeed( -abs(sidereal_tracking_speed) * auto_centering_speed);
+    }
+    Bluetooth.print(F("dec_speed_set_to : "));
+    Bluetooth.println(DEC_stepper.speed());
   }
+
+
+}
 
 void micro_move_ra_clockwise() {
   /*micro_move_ra+*/
@@ -858,7 +855,7 @@ void speed_ra_increase() {
 void speed_ra_decrease() {
   /*speed_ra--*/
   RA_current_speed = RA_stepper.speed();
-  if (RA_stepper.isRunning() &&  RA_manual_control == 1 && abs(RA_current_speed) > 2*sidereal_tracking_speed) {
+  if (RA_stepper.isRunning() &&  RA_manual_control == 1 && abs(RA_current_speed) > 2 * sidereal_tracking_speed) {
     RA_stepper.setSpeed(RA_current_speed / 2);
     //Bluetooth.println(RA_stepper.speed());
   }
@@ -877,8 +874,8 @@ void speed_dec_increase() {
 void speed_dec_decrease() {
   /*speed_dec--*/
   DEC_current_speed = DEC_stepper.speed();
-  if (DEC_stepper.isRunning()  && DEC_manual_control == 1 && abs(DEC_current_speed) >  2*sidereal_tracking_speed) {
-  DEC_stepper.setSpeed(DEC_current_speed / 2);
+  if (DEC_stepper.isRunning()  && DEC_manual_control == 1 && abs(DEC_current_speed) >  2 * sidereal_tracking_speed) {
+    DEC_stepper.setSpeed(DEC_current_speed / 2);
     //Bluetooth.println(DEC_stepper.speed());
   }
 }
@@ -886,14 +883,14 @@ void speed_dec_decrease() {
 void stop_and_send_offsets()
 {
 
-if(RA_auto_control==1 || DEC_auto_control==1){
-  return;
-}
+  if (RA_auto_control == 1 || DEC_auto_control == 1) {
+    return;
+  }
 
-stop_all();
+  stop_all();
 
   /*stop&send_offsets*/
- 
+
   Bluetooth.println(F("current DEC step number is :  "));
   Bluetooth.println(DEC_stepper.currentPosition());
   Bluetooth.println(F("DEC Steps to go number is :  "));
@@ -916,7 +913,7 @@ stop_all();
   Bluetooth.print(alignRA);
   Bluetooth.print(",");
   Bluetooth.println(alignDEC);
- 
+
 }
 
 
@@ -927,28 +924,28 @@ void stop_all() {
   /*stop*/
 
   if (RA_auto_control == 1 || DEC_auto_control == 1) {
-    
-   // RA_stepper.setMaxSpeed(RA_stepper.maxSpeed()/4);
-   // DEC_stepper.setMaxSpeed(DEC_stepper.maxSpeed()/4);
-  unsigned long  time_now = millis();
-   
-    RA_stepper.stop();
-    
-   
 
-     //  while(millis() < time_now + 1000){
-        // add the code you want to keep running here
-        //wait approx. [period] ms
-   // }   
-    
-     
-    
-     second_move_execution = true;
-      DEC_stepper.stop();
-       Bluetooth.println(F("move_canceled")); 
-     //RA_stepper.setMaxSpeed(RA_stepper.maxSpeed()*4);
-     //DEC_stepper.setMaxSpeed(DEC_stepper.maxSpeed()*4);
-    
+    // RA_stepper.setMaxSpeed(RA_stepper.maxSpeed()/4);
+    // DEC_stepper.setMaxSpeed(DEC_stepper.maxSpeed()/4);
+    unsigned long  time_now = millis();
+
+    RA_stepper.stop();
+
+
+
+    //  while(millis() < time_now + 1000){
+    // add the code you want to keep running here
+    //wait approx. [period] ms
+    // }
+
+
+
+    second_move_execution = true;
+    DEC_stepper.stop();
+    Bluetooth.println(F("move_canceled"));
+    //RA_stepper.setMaxSpeed(RA_stepper.maxSpeed()*4);
+    //DEC_stepper.setMaxSpeed(DEC_stepper.maxSpeed()*4);
+
     send_motor_directions();
 
   }
@@ -960,21 +957,23 @@ void stop_all() {
 
     /* restore the motor's direction to the one of the last goto move : */
     if (ra_goto_direction == 1 && RA_direction_slow == -1) {
-      if(stop_and_restore_dir==1){
-      blocking_ra_move(-received_ra_bl_fix, RA_stepper.maxSpeed());}
+      if (stop_and_restore_dir == 1) {
+        blocking_ra_move(-received_ra_bl_fix, RA_stepper.maxSpeed());
+      }
       RA_direction_slow = 1;
 
     }
 
     if (ra_goto_direction == -1 && RA_direction_slow == 1 ) {
-      if(stop_and_restore_dir==1){
-      blocking_ra_move(+received_ra_bl_fix , RA_stepper.maxSpeed() );}
+      if (stop_and_restore_dir == 1) {
+        blocking_ra_move(+received_ra_bl_fix , RA_stepper.maxSpeed() );
+      }
       RA_direction_slow = -1;
 
     }
-   if (energy_saving_is_on) {
-     digitalWrite(10, HIGH); //DISABLE the RA motor driver
-  } 
+    if (energy_saving_is_on) {
+      digitalWrite(10, HIGH); //DISABLE the RA motor driver
+    }
 
   }
 
@@ -984,22 +983,24 @@ void stop_all() {
 
     /* restore the motor's direction to the one of the last goto move : */
     if (dec_goto_direction == 1 && DEC_direction_slow == -1 ) {
-      if(stop_and_restore_dir==1){
-      blocking_dec_move(-received_dec_bl_fix , DEC_stepper.maxSpeed());}
+      if (stop_and_restore_dir == 1) {
+        blocking_dec_move(-received_dec_bl_fix , DEC_stepper.maxSpeed());
+      }
       DEC_direction_slow = 1;
 
     }
 
     if (dec_goto_direction == -1 && DEC_direction_slow == 1 ) {
-      if(stop_and_restore_dir==1){
-      blocking_dec_move(+received_dec_bl_fix , DEC_stepper.maxSpeed());}
+      if (stop_and_restore_dir == 1) {
+        blocking_dec_move(+received_dec_bl_fix , DEC_stepper.maxSpeed());
+      }
       DEC_direction_slow = -1;
 
     }
 
     if (energy_saving_is_on) {
-    digitalWrite(9, HIGH); //DISABLE the DEC motor driver
-  }
+      digitalWrite(9, HIGH); //DISABLE the DEC motor driver
+    }
 
   }
 
@@ -1016,16 +1017,16 @@ void stop_all() {
     DEC_manual_control = 1;
   }
 
-if(tracking_reached_limit){
-  Bluetooth.println(F("ra_tracking_limit_reached"));
-  tracking_reached_limit= false ;
-     Bluetooth.print(F("ra_horizon_tracking_limit : "));
-   Bluetooth.println(ra_horizon_tracking_limit);
-   
-  }  
+  if (tracking_reached_limit) {
+    Bluetooth.println(F("ra_tracking_limit_reached"));
+    tracking_reached_limit = false ;
+    Bluetooth.print(F("ra_horizon_tracking_limit : "));
+    Bluetooth.println(ra_horizon_tracking_limit);
 
-  
-  
+  }
+
+
+
 }
 
 
@@ -1034,14 +1035,14 @@ if(tracking_reached_limit){
 void check_dec_backlash() {
 
   digitalWrite(9, LOW); //ENABLE the DEC motor driver
-   char * strtokIndx; // this is used by strtok() as an index
+  char * strtokIndx; // this is used by strtok() as an index
   strtokIndx = strtok(NULL, ";"); // this continues where the previous call left off
   DEC_steps_to_go = atol(strtokIndx);     // convert this part to a Long
-if(dec_goto_direction==-1){
-    DEC_steps_to_go=-DEC_steps_to_go;
+  if (dec_goto_direction == -1) {
+    DEC_steps_to_go = -DEC_steps_to_go;
   }
-  blocking_dec_move(DEC_steps_to_go , DEC_stepper.maxSpeed()*0.4);
-  blocking_dec_move(-DEC_steps_to_go , DEC_stepper.maxSpeed()*0.4);
+  blocking_dec_move(DEC_steps_to_go , DEC_stepper.maxSpeed() * 0.4);
+  blocking_dec_move(-DEC_steps_to_go , DEC_stepper.maxSpeed() * 0.4);
 
   DEC_auto_control = 0;
   if (energy_saving_is_on) {
@@ -1052,15 +1053,15 @@ if(dec_goto_direction==-1){
 void check_ra_backlash() {
 
   digitalWrite(10, LOW); //ENABLE the RA motor driver
-   char * strtokIndx; // this is used by strtok() as an index
+  char * strtokIndx; // this is used by strtok() as an index
   strtokIndx = strtok(NULL, ";"); // this continues where the previous call left off
   RA_steps_to_go = atol(strtokIndx);     // convert this part to a Long
-  if(ra_goto_direction==-1){
-    RA_steps_to_go=-RA_steps_to_go;
+  if (ra_goto_direction == -1) {
+    RA_steps_to_go = -RA_steps_to_go;
   }
 
-  blocking_ra_move(RA_steps_to_go , RA_stepper.maxSpeed()*0.4);
-  blocking_ra_move(-RA_steps_to_go , RA_stepper.maxSpeed()*0.4);
+  blocking_ra_move(RA_steps_to_go , RA_stepper.maxSpeed() * 0.4);
+  blocking_ra_move(-RA_steps_to_go , RA_stepper.maxSpeed() * 0.4);
 
   RA_auto_control = 0;
   if (energy_saving_is_on) {
@@ -1086,54 +1087,54 @@ void cross_move() {
   strtokIndx = strtok(NULL, ":");
   strcpy(command, strtokIndx);
   long dec_cross_steps = atol(strtokIndx);     // convert this part to a Long
-  long test_dec_backlash=current_dec_backlash_fix;
-  long test_ra_backlash=current_ra_backlash_fix;
+  long test_dec_backlash = current_dec_backlash_fix;
+  long test_ra_backlash = current_ra_backlash_fix;
   Bluetooth.print(F("dec_cross_steps"));
-   Bluetooth.println(dec_cross_steps);
-    Bluetooth.print(F("ra_cross_steps"));
-   Bluetooth.println(ra_cross_steps);
-   
-if(dec_goto_direction==-1){
-    dec_cross_steps=-dec_cross_steps;
-    test_dec_backlash=-test_dec_backlash;
+  Bluetooth.println(dec_cross_steps);
+  Bluetooth.print(F("ra_cross_steps"));
+  Bluetooth.println(ra_cross_steps);
+
+  if (dec_goto_direction == -1) {
+    dec_cross_steps = -dec_cross_steps;
+    test_dec_backlash = -test_dec_backlash;
   }
-  
-  if(ra_goto_direction==-1){
-    ra_cross_steps=-ra_cross_steps;
-     test_ra_backlash=-test_ra_backlash;
+
+  if (ra_goto_direction == -1) {
+    ra_cross_steps = -ra_cross_steps;
+    test_ra_backlash = -test_ra_backlash;
   }
-Bluetooth.print(F("dec_cross_steps"));
-   Bluetooth.println(dec_cross_steps);
-    Bluetooth.print(F("ra_cross_steps"));
-   Bluetooth.println(ra_cross_steps);
-double dec_to_ra_gear_ratio = dec_initialization_steps/(float)ra_initialization_steps;
- 
-//match the actual(taking into account the difference in ra and dec gears teeth) moving ra and dec speeds before start moving :
-//Also , reduce thet speed to 1/4 of the dec speed ,during the cross move .
-DEC_stepper.setMaxSpeed(dec_to_ra_gear_ratio*(dec_configured_max_speed/4));
-RA_stepper.setMaxSpeed(dec_configured_max_speed/4);
+  Bluetooth.print(F("dec_cross_steps"));
+  Bluetooth.println(dec_cross_steps);
+  Bluetooth.print(F("ra_cross_steps"));
+  Bluetooth.println(ra_cross_steps);
+  double dec_to_ra_gear_ratio = dec_initialization_steps / (float)ra_initialization_steps;
 
-     blocking_dec_move(+ dec_cross_steps , DEC_stepper.maxSpeed()*0.4);
-     Bluetooth.println(F("cross_move_checkpoint:1"));
-     blocking_dec_move(- 2 * dec_cross_steps + test_dec_backlash , DEC_stepper.maxSpeed()*0.4);
-     Bluetooth.println(F("cross_move_checkpoint:2"));
-     blocking_dec_move(dec_cross_steps - test_dec_backlash , DEC_stepper.maxSpeed()*0.4);
-     Bluetooth.println(F("cross_move_checkpoint:3"));
-     blocking_ra_move(+ ra_cross_steps , RA_stepper.maxSpeed()*0.4);
-     Bluetooth.println(F("cross_move_checkpoint:4"));
-     blocking_ra_move(-2 * ra_cross_steps + test_ra_backlash , RA_stepper.maxSpeed()*0.4);
-     Bluetooth.println(F("cross_move_checkpoint:5"));
-     blocking_ra_move(ra_cross_steps - test_ra_backlash , RA_stepper.maxSpeed()*0.4);
-      Bluetooth.println(F("cross_move_checkpoint:6"));
- 
+  //match the actual(taking into account the difference in ra and dec gears teeth) moving ra and dec speeds before start moving :
+  //Also , reduce thet speed to 1/4 of the dec speed ,during the cross move .
+  DEC_stepper.setMaxSpeed(dec_to_ra_gear_ratio * (dec_configured_max_speed / 4));
+  RA_stepper.setMaxSpeed(dec_configured_max_speed / 4);
 
-/*Restore max speed values for both motors aftet the cross move :*/
-DEC_stepper.setMaxSpeed(dec_configured_max_speed);
-RA_stepper.setMaxSpeed(ra_configured_max_speed);
-blocking_dec_move(0, DEC_stepper.maxSpeed()*0.4);
-blocking_ra_move(0 , RA_stepper.maxSpeed()*0.4);
+  blocking_dec_move(+ dec_cross_steps , DEC_stepper.maxSpeed() * 0.4);
+  Bluetooth.println(F("cross_move_checkpoint:1"));
+  blocking_dec_move(- 2 * dec_cross_steps + test_dec_backlash , DEC_stepper.maxSpeed() * 0.4);
+  Bluetooth.println(F("cross_move_checkpoint:2"));
+  blocking_dec_move(dec_cross_steps - test_dec_backlash , DEC_stepper.maxSpeed() * 0.4);
+  Bluetooth.println(F("cross_move_checkpoint:3"));
+  blocking_ra_move(+ ra_cross_steps , RA_stepper.maxSpeed() * 0.4);
+  Bluetooth.println(F("cross_move_checkpoint:4"));
+  blocking_ra_move(-2 * ra_cross_steps + test_ra_backlash , RA_stepper.maxSpeed() * 0.4);
+  Bluetooth.println(F("cross_move_checkpoint:5"));
+  blocking_ra_move(ra_cross_steps - test_ra_backlash , RA_stepper.maxSpeed() * 0.4);
+  Bluetooth.println(F("cross_move_checkpoint:6"));
 
-Bluetooth.println(F("cross_move_done"));
+
+  /*Restore max speed values for both motors aftet the cross move :*/
+  DEC_stepper.setMaxSpeed(dec_configured_max_speed);
+  RA_stepper.setMaxSpeed(ra_configured_max_speed);
+  blocking_dec_move(0, DEC_stepper.maxSpeed() * 0.4);
+  blocking_ra_move(0 , RA_stepper.maxSpeed() * 0.4);
+
+  Bluetooth.println(F("cross_move_done"));
 
   if (energy_saving_is_on) {
     digitalWrite(9, HIGH); //DISABLE the DEC motor driver
@@ -1193,7 +1194,7 @@ void define_dec_direction() {
 
 void define_ra_direction() {
   if (RA_stepper.distanceToGo() > 0) {
-   Bluetooth.println("RA moving clockwise!!");
+    Bluetooth.println("RA moving clockwise!!");
     ra_goto_direction = 1;
     RA_direction_slow = 1;
   }
@@ -1208,132 +1209,131 @@ void define_ra_direction() {
 }
 
 
-void blocking_dec_move(long steps,float acceleration) {
-  
+void blocking_dec_move(long steps, float acceleration) {
+
   microstep_mode_X4();
   DEC_stepper.setAcceleration(acceleration);
   DEC_stepper.setCurrentPosition(DEC_stepper.currentPosition() / 4);
   DEC_stepper.runToNewPosition(DEC_stepper.currentPosition() + steps);
   microstep_mode_X16();
   DEC_stepper.setCurrentPosition(DEC_stepper.currentPosition() * 4);
-  DEC_stepper.setAcceleration(DEC_stepper.maxSpeed()* 0.4 );
+  DEC_stepper.setAcceleration(DEC_stepper.maxSpeed() * 0.4 );
 
 }
 
-void blocking_ra_move(long steps,float acceleration) {
+void blocking_ra_move(long steps, float acceleration) {
   microstep_mode_X4();
   RA_stepper.setAcceleration(acceleration);
   RA_stepper.setCurrentPosition(RA_stepper.currentPosition() / 4);
   RA_stepper.runToNewPosition(RA_stepper.currentPosition() + steps);
   microstep_mode_X16();
   RA_stepper.setCurrentPosition(RA_stepper.currentPosition() * 4);
-  RA_stepper.setAcceleration(RA_stepper.maxSpeed()* 0.4 );
+  RA_stepper.setAcceleration(RA_stepper.maxSpeed() * 0.4 );
 }
 
-void send_motor_directions(){
-   Bluetooth.print(F("goto_ending_directions:"));
-   Bluetooth.print(ra_goto_direction);
-   Bluetooth.print(F(":"));
-   Bluetooth.println(dec_goto_direction);     
-  
-  }
+void send_motor_directions() {
+  Bluetooth.print(F("goto_ending_directions:"));
+  Bluetooth.print(ra_goto_direction);
+  Bluetooth.print(F(":"));
+  Bluetooth.println(dec_goto_direction);
+
+}
 
 
-void  get_current_backlash_fixes(){
+void  get_current_backlash_fixes() {
   received_ra_bl_fix = current_ra_backlash_fix;
   received_dec_bl_fix = current_dec_backlash_fix;
-  
-  }
+
+}
 
 
-  void set_auto_tracking(){
-    char * strtokIndx; // this is used by strtok() as an index
+void set_auto_tracking() {
+  char * strtokIndx; // this is used by strtok() as an index
   strtokIndx = strtok(NULL, ":"); // this continues where the previous call left off
- int received_auto_tracking = atoi(strtokIndx);     // convert this part to a integer
+  int received_auto_tracking = atoi(strtokIndx);     // convert this part to a integer
   if (received_auto_tracking == 1) {
     auto_tracking = true;
-   }
+  }
   if (received_auto_tracking == 0) {
     auto_tracking = false;
-   }
-      
+  }
+
+}
+
+
+void center_object() {
+  char * strtokIndx; // this is used by strtok() as an index
+  strtokIndx = strtok(NULL, ":");     // this continues where the previous call left off
+  int received_ra_correction = atoi(strtokIndx);     // convert this part to a integer
+  strtokIndx = strtok(NULL, ":");     // this continues where the previous call left off
+  int received_dec_correction = atoi(strtokIndx);     // convert this part to a integer
+  digitalWrite(9, LOW); //ENABLE the DEC motor driver
+
+
+  digitalWrite(10, LOW); //ENABLE the RA motor driver
+
+
+  blocking_ra_move(received_ra_correction, RA_stepper.maxSpeed() * 0.4);
+  blocking_dec_move(received_dec_correction, DEC_stepper.maxSpeed() * 0.4);
+
+  Bluetooth.print(F("received_ra_correction : "));
+  Bluetooth.println(received_ra_correction);
+  Bluetooth.print(F("received_dec_correction : "));
+  Bluetooth.println(received_dec_correction);
+
+
+
+  //change direction to clockwise:
+
+  if (ra_goto_direction == -1 || RA_direction_slow == -1 && received_ra_correction > 0) {
+    // blocking_ra_move(-received_ra_bl_fix , RA_stepper.maxSpeed());
+    micro_move_ra_clockwise();
+    stop_all();
+
+  }
+  //change direction to counter-clockwise:
+  if (ra_goto_direction == 1 || RA_direction_slow == 1 && received_ra_correction < 0) {
+    // blocking_ra_move(received_ra_bl_fix , RA_stepper.maxSpeed());
+    micro_move_ra_counterclockwise();
+    stop_all();
   }
 
 
-  void center_object(){
-     char * strtokIndx; // this is used by strtok() as an index
-  strtokIndx = strtok(NULL, ":");     // this continues where the previous call left off
-  int received_ra_correction = atoi(strtokIndx);     // convert this part to a integer
-   strtokIndx = strtok(NULL, ":");     // this continues where the previous call left off
-  int received_dec_correction = atoi(strtokIndx);     // convert this part to a integer
-  digitalWrite(9, LOW); //ENABLE the DEC motor driver
-  
-   
- digitalWrite(10, LOW); //ENABLE the RA motor driver
+  //change direction to clockwise:
+  if (dec_goto_direction == -1 || DEC_direction_slow == -1 && received_dec_correction > 0) {
+    // blocking_dec_move(-received_dec_bl_fix , DEC_stepper.maxSpeed());
+    micro_move_dec_clockwise();
+    stop_all();
+  }
+  //change direction to counter-clockwise:
+  if (dec_goto_direction == 1 || DEC_direction_slow == 1 && received_dec_correction < 0) {
+    // blocking_dec_move(received_dec_bl_fix , DEC_stepper.maxSpeed());
+    micro_move_dec_counterclockwise();
+    stop_all();
+  }
 
-    
-  blocking_ra_move(received_ra_correction, RA_stepper.maxSpeed()*0.4); 
-  blocking_dec_move(received_dec_correction, DEC_stepper.maxSpeed()*0.4); 
- 
-   Bluetooth.print(F("received_ra_correction : "));
-   Bluetooth.println(received_ra_correction);
-   Bluetooth.print(F("received_dec_correction : "));
-   Bluetooth.println(received_dec_correction);
+  Bluetooth.println(F("auto_tracking_started"));
+  Bluetooth.println(F("request_tracking"));
+  Bluetooth.println(F("auto_centering_done"));
 
-
-   
-   //change direction to clockwise:
-   
-    if (ra_goto_direction == -1 || RA_direction_slow == -1 && received_ra_correction>0) {
-     // blocking_ra_move(-received_ra_bl_fix , RA_stepper.maxSpeed());
-     micro_move_ra_clockwise();
-     stop_all();
-     
-    }
-    //change direction to counter-clockwise:
-     if (ra_goto_direction == 1 || RA_direction_slow == 1 && received_ra_correction<0) {
-     // blocking_ra_move(received_ra_bl_fix , RA_stepper.maxSpeed());
-      micro_move_ra_counterclockwise();
-      stop_all();
-    }
+}
 
 
-//change direction to clockwise:
- if (dec_goto_direction == -1 || DEC_direction_slow == -1 && received_dec_correction>0) {
-     // blocking_dec_move(-received_dec_bl_fix , DEC_stepper.maxSpeed());
-      micro_move_dec_clockwise();
-      stop_all();
-    }
-    //change direction to counter-clockwise:
-    if (dec_goto_direction == 1 || DEC_direction_slow == 1 && received_dec_correction<0) {
-     // blocking_dec_move(received_dec_bl_fix , DEC_stepper.maxSpeed());
-      micro_move_dec_counterclockwise();
-      stop_all();
-    }
-    
-      Bluetooth.println(F("auto_tracking_started"));
-      Bluetooth.println(F("request_tracking"));
-      Bluetooth.println(F("auto_centering_done"));
-  
-    }
 
-
-    
-  void  update_current_backlash_fixes(){
-     char * strtokIndx; // this is used by strtok() as an index
+void  update_current_backlash_fixes() {
+  char * strtokIndx; // this is used by strtok() as an index
   strtokIndx = strtok(NULL, ":"); // this continues where the previous call left off
- current_ra_backlash_fix = atoi(strtokIndx);     // convert this part to a integer
- strtokIndx = strtok(NULL, ":"); // this continues where the previous call left off
- current_dec_backlash_fix = atoi(strtokIndx);     // convert this part to a integer
-   received_ra_bl_fix = current_ra_backlash_fix;
+  current_ra_backlash_fix = atoi(strtokIndx);     // convert this part to a integer
+  strtokIndx = strtok(NULL, ":"); // this continues where the previous call left off
+  current_dec_backlash_fix = atoi(strtokIndx);     // convert this part to a integer
+  received_ra_bl_fix = current_ra_backlash_fix;
   received_dec_bl_fix = current_dec_backlash_fix;
-    Bluetooth.print(F("current_ra_backlash_fix : "));
-   Bluetooth.println(current_ra_backlash_fix);
-   Bluetooth.print(F(" current_dec_backlash_fix : "));
-   Bluetooth.println( current_dec_backlash_fix);
-    }
+  Bluetooth.print(F("current_ra_backlash_fix : "));
+  Bluetooth.println(current_ra_backlash_fix);
+  Bluetooth.print(F(" current_dec_backlash_fix : "));
+  Bluetooth.println( current_dec_backlash_fix);
+}
 
 
 
 
-   
